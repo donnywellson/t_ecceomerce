@@ -4,8 +4,9 @@ class TImages{
   static const String darkAppLogo = "assets/logos/t-store-splash-logo-black.png";
   static const String lightAppLogo = "assets/logos/t-store-splash-logo-white.png";
 
-  // -- Animated
-  static const String doceranimation = "assets/images/animations/icons8-load-from-cloud.gif";
+  // Lottie Animations
+  static const String doceranimation = "assets/images/animations/docer-animation.json";
+  static const String succesfullyRegisterAnimation = "assets/images/animations/success-animation.json";
 
   // -- Social Logos
   static const String google = "assets/logos/google-icon.png";

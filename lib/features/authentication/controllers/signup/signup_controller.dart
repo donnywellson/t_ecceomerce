@@ -11,64 +11,76 @@ import 'package:t_ecommerce/utils/popups/full_screen_loader.dart';
 import 'package:t_ecommerce/utils/popups/loaders.dart';
 
 class SignUpController extends GetxController {
-  final hidePassword = true.obs;
+  static SignUpController get instance => Get.find();
+
+  //  Variables
+  final hidePassword = true.obs; // Observable for hiding/showing password
   final privacyPolicy = true.obs;
-  final email = TextEditingController();
-  final lastName = TextEditingController();
-  final userName = TextEditingController();
-  final password = TextEditingController();
-  final firstName = TextEditingController();
-  final phoneNumber = TextEditingController();
-  GlobalKey<FormState> signUpFormKey = GlobalKey<FormState>();
+  final email = TextEditingController(); // Controller for email layout
+  final lastName = TextEditingController(); // Controller for last name input
+  final userName = TextEditingController(); // Controller for email input
+  final password = TextEditingController(); // Controller for password input
+  final firstName = TextEditingController(); // Controller for first name layout
+  final phoneNumber =
+      TextEditingController(); // Controller for phone number layout
+  GlobalKey<FormState> signUpFormKey =
+      GlobalKey<FormState>(); // Form key for form validation
 
-  void signup() async {
+  // SIGNUP
+
+    void signup() async {
     try {
+      // Start Loading
       TFullScreenLoader.openLoadingDialog(
-          'We are processing your information...', ''); // Adjust the loading message and image as needed
+          'We are processing your information...', TImages.doceranimation);
 
+      // Check Internet Connectivity
       final isConnected = await NetworkManager.instance.isConnected();
       if (!isConnected) return;
 
+      // Form Validation
       if (!signUpFormKey.currentState!.validate()) return;
 
-      if (!privacyPolicy.value) {
+      // Privacy Policy Check
+      if(!privacyPolicy.value){
         TLoaders.warningSnackBar(
-            title: 'Accept Privacy Policy',
-            message:
-                'In order to create an account, you must read and accept the Privacy Policy & Terms of Use');
+          title: 'Accept Privacy Policy',
+          message: 'In ordet to create account, you must have to read and accept the Privacy Policy & Terms of Use'
+        );
         return;
       }
 
-      // Register user in Firebase Authentication
-      final userCredential = await AuthenticationRepository.instance
-          .registerEmailAndpassword(email.text.trim(), password.text.trim());
+      // Register user in the Firebase Authentication & save user data in the firebase
+      final userCredential = await AuthenticationRepository.instance.registerEmailAndpassword(email.text.trim(), password.text.trim());
 
-      // Save user data in Firestore
+      // Save Authentication user date in the Firebase Firestore
       final newUser = UserModel(
-        id: userCredential.user!.uid,
-        firstName: firstName.text.trim(),
-        lastName: lastName.text.trim(),
-        username: userName.text.trim(),
-        email: email.text.trim(),
-        phoneNumber: phoneNumber.text.trim(),
-        profilePicture: 'profilePicture',
-      );
+        id: userCredential.user!.uid, 
+        firstName: firstName.text.trim(), 
+        lastName: lastName.text.trim(), 
+        username: userName.text.trim(), 
+        email: email.text.trim(), 
+        phoneNumber: phoneNumber.text.trim(), 
+        profilePicture: ''
+        );
 
-      // Save user data in Firestore
-      await UserRepository.instance.saveUserRecord(newUser);
+        final userRepository = Get.put(UserRepository());
+        await userRepository.saveUserRecord(newUser);
 
-      // Show success message
-      TLoaders.succeessSnackBar(
-          title: 'Congratulations',
-          message: 'Your account has been created! Verify email to continue');
+        // Remove Loader
+        TFullScreenLoader.stopLoading();
+      
+        // Show Succes Message
+        TLoaders.succeessSnackBar(title: "Congratulations", message: "Your account has been created! Verify wmail to continue");
 
-      // Move to Verify Email Screen
-      Get.to(() => const VerifyEmailScreen());
-
-    } catch (e) {
-      TLoaders.errorSnackBar(title: 'Oh Snap!', message: e.toString());
-    } finally {
+        // Move to Verify Email Screen
+        Get.to(() =>  VerifyEmailScreen(email: email.text.trim(),));
+      } catch (e) {
+      // Remove Loader
       TFullScreenLoader.stopLoading();
-    }
+
+      // Show your Generic Error to the user
+      TLoaders.errorSnackBar(title: 'Oh Snap!' , message: e.toString());
+    } 
   }
 }
